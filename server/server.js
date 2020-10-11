@@ -1,4 +1,3 @@
-
 /*
   █████████
  ███░░░░░███
@@ -14,11 +13,12 @@
         =            Requires            =
 =============================================*/
 
-require('../config/config')
+require('./config/config')
 
-const express = require('express')
-const bodyParser = require('body-parser')
-const app = express()
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const app = express();
 
 
 /*----------  parse application/x-www-form-urlencoded  ----------*/
@@ -28,70 +28,31 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 
+/*----------  configuracion global de rutas  ----------*/
+app.use(require('./routers/index'))
+
+
 /*=============================================
-      =            Rutas            =
+=            conexion base de datos            =
 =============================================*/
-app.get('/usuario', (req, res) => {
-    res.json("getUsuario")
-})
 
-app.post('/usuario', (req, res) => {
-    let body = req.body;
-    try {
-        if (body.nombre === undefined) {
-            return res.status(400).json({
-                ok: false,
-                msg: 'El nombre no puede estar vacio'
-            })
+mongoose.connect(process.env.URLDB,
+    {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useCreateIndex: true
+    },
+    (err, res) => {
+        if (err) {
+            throw err;
         }
-        if (body.apellido === undefined) {
-            return res.status(400).json({
-                ok: false,
-                msg: 'El apellido no puede estar vacio'
-            })
-        }
-        if (body.edad === undefined) {
-            return res.status(400).json({
-                ok: false,
-                msg: 'La edad no puede estar vacio'
-            })
-        }
-        if (body.email === undefined) {
-            return res.status(400).json({
-                ok: false,
-                msg: 'El email no puede estar vacio'
-            })
-        }
-        console.log(body)
-        res.status(200).json({
-            ok: true,
-            body
-        })
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            msg: 'Contacte con el administrador'
-        })
-    }
 
-})
-
-app.put('/usuario/:id', (req, res) => {
-    let id = req.params.id;
-    console.log(id)
-    res.status(200).json({
-        ok: true,
-        id
-    })
-})
-app.delete('/usuario/:id', (req, res) => {
-    res.json("deleteUsuario")
-})
+        console.log('Conectado a mongoDB')
+    });
 
 
-/*=====  End of Rutas  ======*/
+/*=============================================
+=            Escuchando el puerto            =
+=============================================*/
 
-
-
-
-app.listen(process.env.PORT, () => console.log(`Example app listening on port ` + process.env.PORT))
+app.listen(process.env.PORT, () => console.log(`Escuchando en el puerto: ` + process.env.PORT))
